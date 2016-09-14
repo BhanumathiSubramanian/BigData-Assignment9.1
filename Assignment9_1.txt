@@ -1,0 +1,32 @@
+petrol = load '/home/acadgild/PigNotes/petrol_dataset' using PigStorage(',') as (DistrictId:chararray,DistributerName:chararray, BuyRate:chararray, sellrate:chararray,volumeIN:int,volumeOUT:int,year:int);
+
+Dump petrol
+
+
+1. What is the total amount of petrol in volume sold by every distributer?
+
+totalgroup = GROUP petrol by (DistributerName)
+totalpetrol = FOREACH totalgroup GENERATE SUM(petrol.volumeOUT);
+
+2. Which are the top 10 distributers ID's for selling petrol? Also display the amount of petrol sold in volume.
+
+OrderPetrol = ORDER petrol by volumeOUT DESC
+FilterPetrol = LIMIT OrderPetrol 10;
+
+
+OrderPetrol = ORDER totalgroup by volumeOUT DESC
+
+3. List 10 years where consumption of petrol is more with the distributer id who sold it.
+
+morepetrol = FOREACH petrol GENERATE DistrictId, DistributerName, year, volumeIN-volumeOUT as total;
+orderpetrol = ORDEr morepetrol by total DESC;
+filorder = FOREACH orderpetrol GENERATE year;
+limitpetrol = LIMIT filorder 10
+
+
+4. Find the distributer name who sold petrol in least amount.
+
+B = FOREACH petrol GENERATE DistributerName, REPLACE(sellrate,'[$]','') as sellratee;
+C = FOREACH B generate DistributerName, (double)sellrate;
+D = GROUP C by DistributerName;
+E = FOREACH D GENERATE group, MIN(C.sellrate);
